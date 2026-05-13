@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#9B2335">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Precifica Açaí">
+<title>Precifica Açaí</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --bg: #0D1A0D;
+    --bg2: #162316;
+    --bg3: #1e2e1e;
+    --primary: #9B2335;
+    --primary-light: #b8293e;
+    --accent: #E8832A;
+    --accent-light: #f09440;
+    --cream: #F8F4F0;
+    --green: #2D7A4F;
+    --green-light: #38a065;
+    --text: #F0EDE8;
+    --text-muted: #9a9a8a;
+    --border: #2a3a2a;
+    --danger: #e53e3e;
+    --warning: #d69e2e;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+  /* ===================== LAYOUT ===================== */
+  .screen { display: none; min-height: 100vh; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  .header { background: var(--bg2); padding: 16px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .header h1 { font-size: 18px; font-weight: 700; flex: 1; }
+  .header .logo { font-size: 22px; }
+  .btn-icon { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 4px; border-radius: 6px; }
+  .btn-icon:hover { color: var(--text); background: var(--bg3); }
+
+  .content { flex: 1; padding: 20px; max-width: 480px; margin: 0 auto; width: 100%; }
+
+  /* ===================== BOTTOM NAV ===================== */
+  .bottom-nav { background: var(--bg2); border-top: 1px solid var(--border); display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px 4px 14px; cursor: pointer; color: var(--text-muted); font-size: 10px; gap: 4px; border: none; background: none; }
+  .nav-item .nav-icon { font-size: 22px; }
+  .nav-item.active { color: var(--accent); }
+  .nav-item.active .nav-icon { filter: drop-shadow(0 0 4px var(--accent)); }
+  .main-content { padding-bottom: 80px; }
+
+  /* ===================== BUTTONS ===================== */
+  .btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 20px; border-radius: var(--radius); font-size: 16px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; width: 100%; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent-light); }
+  .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--bg2); }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-green { background: var(--green); color: white; }
+  .btn-green:hover { background: var(--green-light); }
+  .btn-sm { padding: 8px 14px; font-size: 14px; width: auto; }
+  .btn-outline { background: transparent; border: 1.5px solid var(--accent); color: var(--accent); }
+
+  /* ===================== INPUTS ===================== */
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
+  .field input, .field select, .field textarea { width: 100%; background: var(--bg3); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; color: var(--text); font-size: 15px; outline: none; transition: border-color 0.15s; -webkit-appearance: none; }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field input::placeholder { color: var(--text-muted); }
+  .field select option { background: var(--bg3); }
+
+  /* ===================== CARDS ===================== */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+  .card-title { font-size: 14px; color: var(--text-muted); margin-bottom: 4px; }
+  .card-value { font-size: 22px; font-weight: 700; }
+  .card-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .card-row:last-child { border-bottom: none; }
+
+  /* ===================== CHIPS ===================== */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .chip { padding: 8px 16px; border-radius: 100px; font-size: 14px; cursor: pointer; border: 1.5px solid var(--border); background: var(--bg3); color: var(--text); transition: all 0.15s; }
+  .chip.selected { border-color: var(--accent); background: rgba(232,131,42,0.15); color: var(--accent); }
+
+  /* ===================== ALERTS ===================== */
+  .alert { padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 12px; font-size: 14px; display: flex; gap: 10px; align-items: flex-start; }
+  .alert-warning { background: rgba(214,158,46,0.15); border: 1px solid rgba(214,158,46,0.4); color: #f0c040; }
+  .alert-danger { background: rgba(229,62,62,0.15); border: 1px solid rgba(229,62,62,0.4); color: #f87171; }
+  .alert-success { background: rgba(45,122,79,0.2); border: 1px solid rgba(45,122,79,0.5); color: #6ee7a0; }
+  .alert-info { background: rgba(155,35,53,0.2); border: 1px solid rgba(155,35,53,0.4); color: #f9a8b8; }
+
+  /* ===================== PROGRESS STEPS ===================== */
+  .steps { display: flex; gap: 4px; margin-bottom: 24px; }
+  .step-dot { flex: 1; height: 4px; border-radius: 2px; background: var(--border); transition: background 0.3s; }
+  .step-dot.done { background: var(--accent); }
+  .step-dot.active { background: var(--accent); opacity: 0.6; }
+
+  /* ===================== LOGIN SCREEN ===================== */
+  #screen-login { align-items: center; justify-content: center; padding: 20px; background: var(--bg); }
+  .login-box { width: 100%; max-width: 360px; text-align: center; }
+  .login-logo { font-size: 64px; margin-bottom: 8px; }
+  .login-title { font-size: 28px; font-weight: 800; color: var(--cream); margin-bottom: 4px; }
+  .login-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 40px; }
+  .login-box .field { text-align: left; }
+  .login-box input { font-size: 18px; text-align: center; letter-spacing: 2px; text-transform: uppercase; }
+  .login-error { color: var(--danger); font-size: 14px; margin-top: 12px; min-height: 20px; }
+  .login-footer { margin-top: 40px; font-size: 12px; color: var(--text-muted); }
+
+  /* ===================== HOME ===================== */
+  .home-hero { background: linear-gradient(135deg, var(--primary) 0%, #5a1220 100%); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; text-align: center; }
+  .home-hero h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .home-hero p { font-size: 14px; color: rgba(255,255,255,0.75); margin-bottom: 20px; }
+  .home-cta { background: var(--accent); color: white; padding: 16px 24px; border-radius: var(--radius); font-size: 17px; font-weight: 700; border: none; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .home-cta:hover { background: var(--accent-light); }
+
+  .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .quick-btn { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; cursor: pointer; text-align: center; transition: all 0.15s; }
+  .quick-btn:hover { border-color: var(--accent); background: var(--bg3); }
+  .quick-btn .icon { font-size: 28px; margin-bottom: 8px; }
+  .quick-btn .label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .quick-btn .sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .section-title { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+  .recipe-item { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.15s; }
+  .recipe-item:hover { border-color: var(--accent); }
+  .recipe-item .recipe-icon { font-size: 28px; }
+  .recipe-item .recipe-info { flex: 1; }
+  .recipe-item .recipe-name { font-size: 15px; font-weight: 600; }
+  .recipe-item .recipe-detail { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .recipe-item .recipe-price { font-size: 16px; font-weight: 700; color: var(--accent); }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+  /* ===================== CALCULATOR STEPS ===================== */
+  .step-header { margin-bottom: 20px; }
+  .step-header h2 { font-size: 20px; font-weight: 700; }
+  .step-header p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+
+  .ingredient-row { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 8px; }
+  .ingredient-row .ing-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .ingredient-row .ing-name { font-size: 14px; font-weight: 600; }
+  .ingredient-row .ing-cost { font-size: 13px; color: var(--accent); }
+  .ingredient-row .ing-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ingredient-row input { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 8px; color: var(--text); font-size: 14px; width: 100%; outline: none; }
+  .ingredient-row input:focus { border-color: var(--accent); }
+
+  .add-ingredient-btn { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 12px; text-align: center; cursor: pointer; color: var(--text-muted); font-size: 14px; margin-bottom: 8px; transition: all 0.15s; }
+  .add-ingredient-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .autocomplete-wrap { position: relative; }
+  .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg2); border: 1px solid var(--accent); border-radius: 0 0 var(--radius-sm) var(--radius-sm); z-index: 200; max-height: 200px; overflow-y: auto; }
+  .autocomplete-item { padding: 10px 14px; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--border); }
+  .autocomplete-item:hover { background: var(--bg3); }
+  .autocomplete-item:last-child { border-bottom: none; }
+
+  /* ===================== RESULT SCREEN ===================== */
+  .result-hero { background: linear-gradient(135deg, var(--green) 0%, #1a5235 100%); border-radius: var(--radius); padding: 24px; text-align: center; margin-bottom: 16px; }
+  .result-hero .label { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+  .result-hero .price { font-size: 48px; font-weight: 800; color: white; }
+  .result-hero .sub { font-size: 14px; color: rgba(255,255,255,0.7); margin-top: 4px; }
+
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .result-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; text-align: center; }
+  .result-card .rc-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .result-card .rc-value { font-size: 20px; font-weight: 700; }
+  .result-card.green .rc-value { color: var(--green-light); }
+  .result-card.orange .rc-value { color: var(--accent); }
+
+  .projection-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+  .projection-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+  .projection-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .projection-row:last-child { border-bottom: none; }
+  .projection-row .pv { font-weight: 700; color: var(--accent); }
+
+  /* ===================== CHANNEL CALCULATOR ===================== */
+  .channel-card { border-radius: var(--radius); padding: 16px; margin-bottom: 10px; border: 2px solid transparent; }
+  .channel-card.balcao { background: rgba(45,122,79,0.15); border-color: var(--green); }
+  .channel-card.ifood-basic { background: rgba(232,131,42,0.1); border-color: rgba(232,131,42,0.4); }
+  .channel-card.ifood-entrega { background: rgba(229,62,62,0.1); border-color: rgba(229,62,62,0.3); }
+  .channel-card.cardapio { background: rgba(155,35,53,0.1); border-color: rgba(155,35,53,0.4); }
+  .channel-card .ch-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .channel-card .ch-remains { font-size: 24px; font-weight: 800; }
+  .channel-card .ch-lost { font-size: 12px; color: var(--text-muted); }
+  .channel-card .ch-monthly { font-size: 13px; margin-top: 6px; color: var(--text-muted); }
+  .channel-card .ch-donation { color: var(--danger); font-weight: 600; }
+
+  .wow-box { background: rgba(155,35,53,0.2); border: 2px solid var(--primary); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; text-align: center; }
+  .wow-box .wow-title { font-size: 16px; font-weight: 700; color: var(--primary-light); margin-bottom: 8px; }
+  .wow-box .wow-value { font-size: 36px; font-weight: 800; color: white; }
+  .wow-box .wow-sub { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ===================== ESTOQUE ===================== */
+  .stock-item { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+  .stock-item .si-info { flex: 1; }
+  .stock-item .si-name { font-size: 15px; font-weight: 600; }
+  .stock-item .si-detail { font-size: 12px; color: var(--text-muted); }
+  .stock-item .si-price { font-size: 16px; font-weight: 700; color: var(--accent); }
+  .stock-item .si-actions { display: flex; gap: 6px; }
+
+  /* ===================== ADICIONAIS ===================== */
+  .adicional-item { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; }
+  .adicional-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .adicional-name { font-size: 15px; font-weight: 600; }
+  .adicional-margin { font-size: 12px; padding: 2px 8px; border-radius: 100px; font-weight: 600; }
+  .margin-ok { background: rgba(45,122,79,0.2); color: #6ee7a0; }
+  .margin-low { background: rgba(229,62,62,0.2); color: #f87171; }
+  .adicional-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; }
+  .adicional-row span:last-child { color: var(--text-muted); }
+
+  /* ===================== ADMIN ===================== */
+  .token-item { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+  .token-code { font-family: monospace; font-size: 16px; font-weight: 700; color: var(--accent); letter-spacing: 1px; }
+  .token-name { font-size: 13px; color: var(--text-muted); }
+  .token-date { font-size: 11px; color: var(--text-muted); }
+  .token-status { padding: 2px 8px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+  .status-active { background: rgba(45,122,79,0.2); color: #6ee7a0; }
+  .status-revoked { background: rgba(229,62,62,0.2); color: #f87171; }
+
+  /* ===================== SOBRE ===================== */
+  .sobre-hero { background: linear-gradient(135deg, var(--primary) 0%, #5a1220 100%); border-radius: var(--radius); padding: 32px 20px; text-align: center; margin-bottom: 20px; }
+  .sobre-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--bg3); margin: 0 auto 12px; font-size: 40px; display: flex; align-items: center; justify-content: center; border: 3px solid var(--accent); }
+  .sobre-name { font-size: 22px; font-weight: 800; }
+  .sobre-bio { font-size: 14px; color: rgba(255,255,255,0.8); margin-top: 8px; line-height: 1.5; }
+  .social-links { display: flex; flex-direction: column; gap: 10px; }
+  .social-link { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: var(--text); transition: all 0.15s; }
+  .social-link:hover { border-color: var(--accent); }
+  .social-link .sl-icon { font-size: 24px; }
+  .social-link .sl-label { font-size: 15px; font-weight: 600; }
+  .social-link .sl-sub { font-size: 12px; color: var(--text-muted); }
+
+  /* ===================== MODAL ===================== */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 500; align-items: flex-end; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg2); border-radius: var(--radius) var(--radius) 0 0; padding: 24px 20px 40px; width: 100%; max-height: 90vh; overflow-y: auto; }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+  .modal-close { float: right; background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer; margin-top: -4px; }
+
+  /* ===================== MISC ===================== */
+  .separator { height: 1px; background: var(--border); margin: 16px 0; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+  .tag-purple { background: rgba(155,35,53,0.2); color: var(--primary-light); }
+  .loading { text-align: center; padding: 40px; color: var(--text-muted); }
+  .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .fab { position: fixed; bottom: 90px; right: 20px; background: var(--accent); color: white; width: 52px; height: 52px; border-radius: 50%; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 4px 16px rgba(232,131,42,0.4); z-index: 90; display: flex; align-items: center; justify-content: center; }
+
+  .nav-steps { display: flex; gap: 12px; margin-top: 20px; }
+  .nav-steps .btn { flex: 1; }
+
+  .profit-input-row { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .profit-input-row input { background: var(--bg3); border: 1.5px solid var(--accent); border-radius: var(--radius-sm); padding: 10px 12px; color: var(--text); font-size: 22px; font-weight: 700; width: 90px; text-align: center; outline: none; }
+  .profit-input-row span { font-size: 18px; color: var(--text-muted); }
+
+  .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: var(--bg2); border: 1px solid var(--accent); border-radius: var(--radius-sm); padding: 10px 20px; font-size: 14px; z-index: 999; white-space: nowrap; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+
+  @media (min-width: 480px) {
+    .bottom-nav { left: 50%; transform: translateX(-50%); max-width: 480px; }
+    .fab { right: calc(50% - 240px + 20px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="screen-login" class="screen active">
+  <div class="login-box">
+    <div class="login-logo">🍇</div>
+    <h1 class="login-title">Precifica Açaí</h1>
+    <p class="login-sub">Seu lucro real, copo por copo</p>
+    <div class="field">
+      <label>Seu código de acesso</label>
+      <input type="text" id="token-input" placeholder="EX: 001-ABC" maxlength="20" autocapitalize="characters">
+    </div>
+    <button class="btn btn-primary" onclick="doLogin()">
+      <span>Entrar</span> <span>→</span>
+    </button>
+    <p class="login-error" id="login-error"></p>
+    <p class="login-footer">Recebeu seu código da Bia? Digite acima e acesse 🍇</p>
+  </div>
+</div>
+
+<!-- ===================== HOME ===================== -->
+<div id="screen-home" class="screen">
+  <div class="header">
+    <span class="logo">🍇</span>
+    <h1>Precifica Açaí</h1>
+    <button class="btn-icon" onclick="doLogout()" title="Sair">⚙️</button>
+  </div>
+  <div class="content main-content">
+    <div class="home-hero">
+      <h2>Quanto sobra no seu bolso?</h2>
+      <p>Calcule o preço certo pro seu açaí em menos de 5 minutos</p>
+      <button class="home-cta" onclick="startCalc()">
+        🧮 Calcular preço de um açaí
+      </button>
+    </div>
+
+    <div class="quick-actions">
+      <div class="quick-btn" onclick="goScreen('screen-canal')">
+        <div class="icon">📊</div>
+        <div class="label">Canal de Venda</div>
+        <div class="sub">iFood vs Balcão</div>
+      </div>
+      <div class="quick-btn" onclick="goScreen('screen-adicionais')">
+        <div class="icon">🍌</div>
+        <div class="label">Adicionais</div>
+        <div class="sub">Precificar extras</div>
+      </div>
+      <div class="quick-btn" onclick="goScreen('screen-estoque')">
+        <div class="icon">📦</div>
+        <div class="label">Estoque</div>
+        <div class="sub">Ingredientes</div>
+      </div>
+      <div class="quick-btn" onclick="goScreen('screen-sobre')">
+        <div class="icon">👩‍🍳</div>
+        <div class="label">Sobre a Bia</div>
+        <div class="sub">Contato e curso</div>
+      </div>
+    </div>
+
+    <div class="section-title">Receitas salvas</div>
+    <div id="recipes-list">
+      <div class="empty-state">
+        <div class="icon">🍇</div>
+        <p>Nenhuma receita salva ainda.<br>Calcule seu primeiro açaí!</p>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="goScreen('screen-home')">
+      <span class="nav-icon">🏠</span><span>Início</span>
+    </button>
+    <button class="nav-item" onclick="goScreen('screen-canal')">
+      <span class="nav-icon">📊</span><span>Canal</span>
+    </button>
+    <button class="nav-item" onclick="goScreen('screen-adicionais')">
+      <span class="nav-icon">🍌</span><span>Adicionais</span>
+    </button>
+    <button class="nav-item" onclick="goScreen('screen-estoque')">
+      <span class="nav-icon">📦</span><span>Estoque</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===================== CALC STEP 1 ===================== -->
+<div id="screen-calc1" class="screen">
+  <div class="header">
+    <button class="btn-icon" onclick="goScreen('screen-home')">←</button>
+    <h1>Novo Açaí</h1>
+  </div>
+  <div class="content main-content">
+    <div class="steps">
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="step-header">
+      <h2>Qual produto?</h2>
+      <p>Diz o nome e o tamanho do copo</p>
+    </div>
+    <div class="field">
+      <label>Nome do produto</label>
+      <input type="text" id="c1-name" placeholder="Ex: Açaí 500ml Especial">
+    </div>
+    <div class="field">
+      <label>Tamanho do copo</label>
+      <select id="c1-size">
+        <option value="200ml">200ml</option>
+        <option value="300ml">300ml</option>
+        <option value="500ml" selected>500ml</option>
+        <option value="700ml">700ml</option>
+        <option value="1L">1 Litro</option>
+        <option value="personalizado">Personalizado</option>
+      </select>
+    </div>
+    <div class="field" id="size-custom-wrap" style="display:none">
+      <label>Tamanho personalizado</label>
+      <input type="text" id="c1-custom-size" placeholder="Ex: 400ml">
+    </div>
+    <div class="field">
+      <label>Quantos copos essa receita rende?</label>
+      <input type="number" id="c1-yield" value="1" min="1">
+    </div>
+    <div class="nav-steps">
+      <button class="btn btn-primary" onclick="goStep2()">Próximo →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CALC STEP 2 ===================== -->
+<div id="screen-calc2" class="screen">
+  <div class="header">
+    <button class="btn-icon" onclick="goScreen('screen-calc1')">←</button>
+    <h1>Base do Açaí</h1>
+  </div>
+  <div class="content main-content">
+    <div class="steps">
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="step-header">
+      <h2>Ingredientes da base</h2>
+      <p>O que vai no açaí antes dos adicionais?</p>
+    </div>
+    <div id="base-ingredients"></div>
+    <div class="add-ingredient-btn" onclick="addIngredient('base')">+ Adicionar ingrediente</div>
+    <div class="nav-steps">
+      <button class="btn btn-secondary btn-sm" onclick="goScreen('screen-calc1')">← Voltar</button>
+      <button class="btn btn-primary" onclick="goStep3()">Próximo →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CALC STEP 3 ===================== -->
+<div id="screen-calc3" class="screen">
+  <div class="header">
+    <button class="btn-icon" onclick="goScreen('screen-calc2')">←</button>
+    <h1>Adicionais Inclusos</h1>
+  </div>
+  <div class="content main-content">
+    <div class="steps">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="step-header">
+      <h2>Adicionais que já vêm no preço</h2>
+      <p>O que vem incluído sem cobrar extra?</p>
+    </div>
+    <div id="addon-ingredients"></div>
+    <div class="add-ingredient-btn" onclick="addIngredient('addon')">+ Adicionar adicional incluso</div>
+    <div class="nav-steps">
+      <button class="btn btn-secondary btn-sm" onclick="goScreen('screen-calc2')">← Voltar</button>
+      <button class="btn btn-primary" onclick="goStep4()">Próximo →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CALC STEP 4 ===================== -->
+<div id="screen-calc4" class="screen">
+  <div class="header">
+    <button class="btn-icon" onclick="goScreen('screen-calc3')">←</button>
+    <h1>Custos Operacionais</h1>
+  </div>
+  <div class="content main-content">
+    <div class="steps">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="step-header">
+      <h2>O que mais custa no seu negócio?</h2>
+      <p>Energia, embalagem, mão de obra...</p>
+    </div>
+    <div class="field">
+      <label>🔌 Energia elétrica (freezer + batedeira) — R$ por copo</label>
+      <input type="number" id="c4-energia" placeholder="0,00" step="0.01" min="0">
+    </div>
+    <div class="field">
+      <label>📦 Embalagem (copo + tampa + colher) — R$ por unidade</label>
+      <input type="number" id="c4-embalagem" placeholder="0,00" step="0.01" min="0">
+    </div>
+    <div class="field">
+      <label>🔥 Gás — R$ por copo (se usar)</label>
+      <input type="number" id="c4-gas" placeholder="0,00" step="0.01" min="0">
+    </div>
+    <div class="field">
+      <label>👩‍🍳 Mão de obra — R$ pelo seu tempo por copo</label>
+      <input type="number" id="c4-mao-obra" placeholder="0,00" step="0.01" min="0">
+    </div>
+    <div class="field">
+      <label>💧 Outros (água, papel, etc.) — R$ por copo</label>
+      <input type="number" id="c4-outros" placeholder="0,00" step="0.01" min="0">
+    </div>
+    <div class="nav-steps">
+      <button class="btn btn-secondary btn-sm" onclick="goScreen('screen-calc3')">← Voltar</button>
+      <button class="btn btn-primary" onclick="goStep5()">Próximo →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CALC STEP 5 ===================== -->
+<div id="screen-calc5" class="screen">
+  <div class="header">
+    <button class="btn-icon" onclick="goScreen('screen-calc4')">←</button>
+    <h1>Margem Desejada</h1>
+  </div>
+  <div class="content main-content">
+    <div class="steps">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+    </div>
+    <div class="step-header">
+      <h2>Quanto quer lucrar?</h2>
+      <p>Escolha sua margem de lucro desejada</p>
+    </div>
+    <div class="chips" id="margin-chips">
+      <div class="chip" onclick="selectMargin(30)">30%</div>
+      <div class="chip" onclick="selectMargin(50)">50%</div>
+      <div class="chip" onclick="selectMargin(80)">80%</div>
+      <div class="chip" onclick="selectMargin(100)">100%</div>
+    </div>
+    <div class="field">
+      <label>Ou escolha sua margem personalizada</label>
+      <div class="profit-input-row">
+        <input type="number" id="c5-margin" value="50" min="1" max="1000" oninput="updateMarginChips()">
+        <span>%</span>
+      </div>
+    </div>
+    <div class="card" id="cost-preview">
+      <div class="card-title">Custo estimado por copo</div>
+      <div class="card-value" id="cost-preview-val">R$ —</div>
+    </div>
+    <div class="nav-steps">
+      <button class="btn btn-secondary btn-sm" onclick="goScreen('screen-calc4')">← Voltar</button>
+      <button class="btn btn-green" onclick="calcResult()">Ver resultado 🍇</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== RESULT ===================== -->
+<div id="screen-result" class="screen">
+  <div class="header">
+    <button class="btn-icon" onclick="goScreen('screen-home')">🏠</button>
+    <h1>Resultado</h1>
+    <button class="btn-icon" onclick="shareResult()">📤</button>
+  </div>
+  <div class="content main-content">
+    <div class="result-hero">
+      <div class="label">Preço sugerido por copo</div>
+      <div class="price" id="res-price">R$ 0,00</div>
+      <div class="sub" id="res-product-name"></div>
+    </div>
+
+    <div id="res-alerts"></div>
+
+    <div class="result-grid">
+      <div class="result-card">
+        <div class="rc-label">Custo por copo</div>
+        <div class="rc-value orange" id="res-cost">R$ 0</div>
+      </div>
+      <div class="result-card green">
+        <div class="rc-label">Lucro por copo</div>
+        <div class="rc-value" id="res-profit">R$ 0</div>
+      </div>
+      <div class="result-card">
+        <div class="rc-label">Margem</div>
+        <div class="rc-value orange" id="res-margin">0%</div>
+      </div>
+      <div class="result-card green">
+        <div class="rc-label">Markup</div>
+        <div class="rc-value" id="res-markup">0%</div>
+      </div>
+    </div>
+
+    <div class="projection-card">
+      <h3>📈 Projeção de faturamento</h3>
+      <div class="projection-row">
+        <span>Copos por dia</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input type="number" id="proj-cups" value="30" min="1" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);width:70px;font-size:14px;text-align:center;outline:none;" oninput="updateProjection()">
+        </div>
+      </div>
+      <div class="projection-row"><span>Faturamento / dia</span><span class="pv" id="proj-day">R$ 0</span></div>
+      <div class="projection-row"><span>Faturamento / semana</span><span class="pv" id="proj-week">R$ 0</span></div>
+      <div class="projection-row"><span>Faturamento / mês</span><span class="pv" id="proj-month">R$ 0</span></div>
+      <div class="projection-row"><span>Lucro líquido / mês</span><span class="pv" id="proj-profit-month" style="color:var(--green-light)">R$ 0</span></div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:16px">
+      <button class="btn btn-primary" onclick="saveRecipe()" style="flex:1">💾 Salvar receita</button>
+      <button class="btn btn-outline" onclick="goScreen('screen-canal')" style="flex:1">📊 Ver por canal</button>
+    </div>
+    <button class="btn btn-secondary" onclick="startCalc()">+ Calcular outro açaí</button>
+  </div>
+</div>
+
+<!-- ===================== CANAL ===================== -->
+<div id="screen-canal" class="screen">
+  <div class="header">
+    <button class="btn-icon" onclick="goScreen('screen-home')">←</button>
+    <h1>Canal de Venda</h1>
+  </div>
+  <div class="content main-content">
+    <div class="alert alert-info">💡 Descubra quanto você realmente fica em cada canal de venda</div>
+
+    <div class="card">
+      <div class="field">
+        <label>Preço do copo (R$)</label>
+        <input type="number" id="canal-price" value="20" step="0.50" min="1" oninput="calcCanal()">
+      </div>
+      <div class="field">
+        <label>Copos vendidos por dia</label>
+        <input type="number" id="canal-cups" value="50" min="1" oninput="calcCanal()">
+      </div>
+      <div class="field">
+        <label>Taxa do cardápio digital (%) — se usar</label>
+        <input type="number" id="canal-cardapio-fee" value="10" step="0.5" min="0" max="100" oninput="calcCanal()">
+      </div>
+    </div>
+
+    <div id="canal-results"></div>
+
+    <div id="canal-wow" style="display:none"></div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="goScreen('screen-home')">
+      <span class="nav-icon">🏠</span><span>Início</span>
+    </button>
+    <button class="nav-item active" onclick="goScreen('screen-canal')">
+      <span class="nav-icon">📊</span><span>Canal</span>
+    </button>
+    <button class="nav-item" onclick="goScreen('screen-adicionais')">
+      <span class="nav-icon">🍌</span><span>Adicionais</span>
+    </button>
+    <button class="nav-item" onclick="goScreen('screen-estoque')">
+      <span class="nav-icon">📦</span><span>Estoque</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===================== ADICIONAIS ===================== -->
+<div id="screen-adicionais" class="screen">
+  <div class="header">
+    <button class="btn-icon" onclick="goScreen('screen-home')">←</button>
+    <h1>Adicionais</h1>
+    <button class="btn-icon" onclick="openAddAdicional()">+</button>
+  </div>
+  <div class="content main-content">
+    <div class="alert alert-info">🍌 Precifique os extras que você cobra separado. Muita gente cobra barato e nem percebe.</div>
+    <div id="adicionais-list">
+      <div class="empty-state"><div class="icon">🍌</div><p>Nenhum adicional cadastrado ainda.</p></div>
+    </div>
+    <button class="btn btn-primary" onclick="openAddAdicional()" style="margin-top:8px">+ Adicionar adicional</button>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="goScreen('screen-home')">
+      <span class="nav-icon">🏠</span><span>Início</span>
+    </button>
+    <button class="nav-item" onclick="goScreen('screen-canal')">
+      <span class="nav-icon">📊</span><span>Canal</span>
+    </button>
+    <button class="nav-item active" onclick="goScreen('screen-adicionais')">
+      <span class="nav-icon">🍌</span><span>Adicionais</span>
+    </button>
+    <button class="nav-item" onclick="goScreen('screen-estoque')">
+      <span class="nav-icon">📦</span><span>Estoque</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===================== ESTOQUE ===================== -->
+<div id="screen-estoque" class="screen">
+  <div class="header">
+    <button class="btn-icon" onclick="goScreen('screen-home')">←</button>
+    <h1>Estoque</h1>
+    <button class="btn-icon" onclick="openAddStock()">+</button>
+  </div>
+  <div class="content main-content">
+    <div class="alert alert-info">📦 Cadastre seus ingredientes aqui. Eles aparecem no autocomplete na hora de calcular.</div>
+    <div id="stock-list">
+      <div class="empty-state"><div class="icon">📦</div><p>Nenhum ingrediente cadastrado ainda.</p></div>
+    </div>
+    <button class="btn btn-primary" onclick="openAddStock()" style="margin-top:8px">+ Adicionar ingrediente</button>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="goScreen('screen-home')">
+      <span class="nav-icon">🏠</span><span>Início</span>
+    </button>
+    <button class="nav-item" onclick="goScreen('screen-canal')">
+      <span class="nav-icon">📊</span><span>Canal</span>
+    </button>
+    <button class="nav-item" onclick="goScreen('screen-adicionais')">
+      <span class="nav-icon">🍌</span><span>Adicionais</span>
+    </button>
+    <button class="nav-item active" onclick="goScreen('screen-estoque')">
+      <span class="nav-icon">📦</span><span>Estoque</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===================== SOBRE ===================== -->
+<div id="screen-sobre" class="screen">
+  <div class="header">
+    <button class="btn-icon" onclick="goScreen('screen-home')">←</button>
+    <h1>Sobre a Bia</h1>
+  </div>
+  <div class="content main-content">
+    <div class="sobre-hero">
+      <div class="sobre-avatar">👩‍🍳</div>
+      <div class="sobre-name">Bia</div>
+      <div class="sobre-bio">Especialista em negócios de açaí. Ajuda açaiteiras e açaiteiros a lucrarem de verdade, sem precisar ser expert em finanças.</div>
+    </div>
+    <div class="section-title">Contato e redes</div>
+    <div class="social-links">
+      <a class="social-link" href="#" id="link-whatsapp">
+        <span class="sl-icon">💬</span>
+        <div><div class="sl-label">WhatsApp</div><div class="sl-sub">Falar com a Bia</div></div>
+      </a>
+      <a class="social-link" href="#" id="link-instagram" target="_blank">
+        <span class="sl-icon">📸</span>
+        <div><div class="sl-label">Instagram</div><div class="sl-sub">@bia</div></div>
+      </a>
+      <a class="social-link" href="#" id="link-curso" target="_blank">
+        <span class="sl-icon">🎓</span>
+        <div><div class="sl-label">Curso completo</div><div class="sl-sub">Acesse no Hotmart</div></div>
+      </a>
+      <a class="social-link" href="#" id="link-grupo" target="_blank">
+        <span class="sl-icon">👥</span>
+        <div><div class="sl-label">Grupo da comunidade</div><div class="sl-sub">+4.700 açaiteiros</div></div>
+      </a>
+    </div>
+    <div class="separator"></div>
+    <button class="btn btn-secondary" onclick="doLogout()">Sair do app</button>
+  </div>
+</div>
+
+<!-- ===================== ADMIN ===================== -->
+<div id="screen-admin" class="screen">
+  <div class="header">
+    <button class="btn-icon" onclick="goScreen('screen-home')">←</button>
+    <h1>⚙️ Painel Admin</h1>
+  </div>
+  <div class="content main-content">
+    <div class="alert alert-warning">🔐 Área restrita — Apenas admin</div>
+    <div class="card" style="margin-bottom:16px">
+      <h3 style="margin-bottom:12px;font-size:15px">Gerar novo token</h3>
+      <div class="field">
+        <label>Nome da aluna</label>
+        <input type="text" id="admin-new-name" placeholder="Ex: Maria Silva">
+      </div>
+      <button class="btn btn-primary" onclick="generateToken()">🔑 Gerar código de acesso</button>
+    </div>
+    <div id="admin-token-result" style="display:none" class="card" style="margin-bottom:16px">
+      <div class="section-title">Token gerado</div>
+      <div id="admin-generated-token" style="font-size:24px;font-weight:800;color:var(--accent);letter-spacing:2px;margin:8px 0"></div>
+      <button class="btn btn-green btn-sm" onclick="copyWhatsapp()">📲 Copiar mensagem WhatsApp</button>
+    </div>
+    <div class="section-title">Tokens ativos</div>
+    <div id="admin-tokens-list"><div class="loading"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<!-- ===================== MODALS ===================== -->
+
+<!-- Modal Stock -->
+<div class="modal-overlay" id="modal-stock">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-stock')">×</button>
+    <div class="modal-title" id="stock-modal-title">Adicionar ingrediente</div>
+    <div class="field">
+      <label>Nome do ingrediente</label>
+      <input type="text" id="stock-name" placeholder="Ex: Polpa de açaí">
+    </div>
+    <div class="field">
+      <label>Unidade de medida</label>
+      <select id="stock-unit">
+        <option value="kg">kg</option>
+        <option value="g">g (gramas)</option>
+        <option value="L">L (litro)</option>
+        <option value="ml">ml</option>
+        <option value="unidade">unidade</option>
+        <option value="pacote">pacote</option>
+        <option value="caixa">caixa</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Preço por <span id="stock-unit-label">kg</span></label>
+      <input type="number" id="stock-price" placeholder="0,00" step="0.01" min="0">
+    </div>
+    <input type="hidden" id="stock-edit-id">
+    <button class="btn btn-primary" onclick="saveStock()">Salvar ingrediente</button>
+  </div>
+</div>
+
+<!-- Modal Adicional -->
+<div class="modal-overlay" id="modal-adicional">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-adicional')">×</button>
+    <div class="modal-title" id="adicional-modal-title">Adicionar adicional</div>
+    <div class="field">
+      <label>Nome do adicional</label>
+      <input type="text" id="ad-name" placeholder="Ex: Granola extra">
+    </div>
+    <div class="field">
+      <label>Quanto custa pra você (R$)</label>
+      <input type="number" id="ad-cost" placeholder="0,00" step="0.01" min="0">
+    </div>
+    <div class="field">
+      <label>Quanto você cobra do cliente (R$)</label>
+      <input type="number" id="ad-price" placeholder="0,00" step="0.01" min="0">
+    </div>
+    <input type="hidden" id="ad-edit-id">
+    <button class="btn btn-primary" onclick="saveAdicional()">Salvar adicional</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script type="module">
+// ===================== FIREBASE CONFIG =====================
+// ATENÇÃO: Substitua com seu firebaseConfig real do console.firebase.google.com
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc, getDocs, collection, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "COLE_SUA_API_KEY_AQUI",
+  authDomain: "precifica-acai.firebaseapp.com",
+  projectId: "precifica-acai",
+  storageBucket: "precifica-acai.appspot.com",
+  messagingSenderId: "SEU_SENDER_ID",
+  appId: "SEU_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ===================== STATE =====================
+const ADMIN_TOKENS = ['ADMIN-BIA', 'ADMIN-MATH'];
+let currentUser = null;
+let currentCalc = { step1: {}, baseIngredients: [], addonIngredients: [], operational: {}, margin: 50 };
+let lastResult = null;
+
+// ===================== STORAGE =====================
+const LS = {
+  get: (k, def=[]) => { try { return JSON.parse(localStorage.getItem('pacai_'+k)) ?? def; } catch { return def; } },
+  set: (k, v) => localStorage.setItem('pacai_'+k, JSON.stringify(v))
+};
+
+// ===================== INIT =====================
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('pacai_token');
+  if (saved) { currentUser = saved; enterApp(); }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+});
+
+// ===================== AUTH =====================
+window.doLogin = async () => {
+  const raw = document.getElementById('token-input').value.trim().toUpperCase();
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  if (!raw) { errEl.textContent = 'Digite seu código de acesso.'; return; }
+
+  if (ADMIN_TOKENS.includes(raw)) {
+    currentUser = raw;
+    localStorage.setItem('pacai_token', raw);
+    enterApp();
+    return;
+  }
+
+  try {
+    const ref = doc(db, 'tokens_acai', raw);
+    const snap = await getDoc(ref);
+    if (snap.exists() && snap.data().active !== false) {
+      await updateDoc(ref, { lastLogin: serverTimestamp() });
+      currentUser = raw;
+      localStorage.setItem('pacai_token', raw);
+      enterApp();
+    } else {
+      errEl.textContent = 'Código inválido ou revogado. Fale com a Bia! 💜';
+    }
+  } catch (e) {
+    errEl.textContent = 'Erro de conexão. Verifique sua internet.';
+  }
+};
+
+document.getElementById('token-input').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+window.doLogout = () => {
+  if (!confirm('Quer sair do app?')) return;
+  localStorage.removeItem('pacai_token');
+  currentUser = null;
+  goScreen('screen-login');
+};
+
+function enterApp() {
+  if (ADMIN_TOKENS.includes(currentUser)) {
+    goScreen('screen-admin');
+    loadAdminTokens();
+  } else {
+    goScreen('screen-home');
+    renderRecipes();
+  }
+  calcCanal();
+  renderStock();
+  renderAdicionais();
+}
+
+// ===================== NAVIGATION =====================
+window.goScreen = (id) => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // sync bottom nav
+  const navMap = { 'screen-home': 0, 'screen-canal': 1, 'screen-adicionais': 2, 'screen-estoque': 3 };
+  document.querySelectorAll('.nav-item').forEach((n, i) => {
+    n.classList.toggle('active', false);
+  });
+  if (id in navMap) {
+    const navEls = document.getElementById(id).querySelectorAll('.nav-item');
+    if (navEls[navMap[id]]) navEls[navMap[id]].classList.add('active');
+  }
+  window.scrollTo(0, 0);
+};
+
+// ===================== CALC STEP 1 =====================
+window.startCalc = () => {
+  currentCalc = { step1: {}, baseIngredients: [], addonIngredients: [], operational: {}, margin: 50 };
+  document.getElementById('c1-name').value = '';
+  document.getElementById('c1-size').value = '500ml';
+  document.getElementById('c1-yield').value = '1';
+  renderIngredients('base');
+  renderIngredients('addon');
+  goScreen('screen-calc1');
+};
+
+document.getElementById('c1-size').addEventListener('change', function() {
+  document.getElementById('size-custom-wrap').style.display = this.value === 'personalizado' ? 'block' : 'none';
+});
+
+window.goStep2 = () => {
+  const name = document.getElementById('c1-name').value.trim();
+  if (!name) { showToast('Diz o nome do produto!'); return; }
+  currentCalc.step1 = {
+    name,
+    size: document.getElementById('c1-size').value === 'personalizado' ? document.getElementById('c1-custom-size').value : document.getElementById('c1-size').value,
+    yield: parseFloat(document.getElementById('c1-yield').value) || 1
+  };
+  if (!currentCalc.baseIngredients.length) addIngredient('base');
+  renderIngredients('base');
+  goScreen('screen-calc2');
+};
+
+// ===================== INGREDIENTS =====================
+window.addIngredient = (type) => {
+  const arr = type === 'base' ? currentCalc.baseIngredients : currentCalc.addonIngredients;
+  arr.push({ name: '', qty: '', unit: 'g', pricePerUnit: '', stockId: null });
+  renderIngredients(type);
+};
+
+function renderIngredients(type) {
+  const arr = type === 'base' ? currentCalc.baseIngredients : currentCalc.addonIngredients;
+  const container = document.getElementById(type === 'base' ? 'base-ingredients' : 'addon-ingredients');
+  const stock = LS.get('stock', []);
+
+  container.innerHTML = arr.map((ing, i) => `
+    <div class="ingredient-row">
+      <div class="ing-header">
+        <div class="autocomplete-wrap" style="flex:1">
+          <input type="text" placeholder="Nome do ingrediente" value="${ing.name || ''}"
+            oninput="onIngNameInput(this,'${type}',${i})"
+            onfocus="showAutocomplete(this,'${type}',${i})"
+            onblur="hideAutocomplete('ac-${type}-${i}')"
+            style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);width:100%;outline:none;font-size:14px;">
+          <div class="autocomplete-list" id="ac-${type}-${i}" style="display:none"></div>
+        </div>
+        <button onclick="removeIngredient('${type}',${i})" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;margin-left:8px">✕</button>
+      </div>
+      <div class="ing-inputs">
+        <div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Quantidade usada</div>
+          <div style="display:flex;gap:4px">
+            <input type="number" placeholder="0" value="${ing.qty || ''}" min="0" step="any"
+              oninput="updateIngField('${type}',${i},'qty',this.value)" style="flex:1">
+            <select oninput="updateIngField('${type}',${i},'unit',this.value)"
+              style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 4px;color:var(--text);font-size:12px;outline:none;-webkit-appearance:none;width:60px">
+              ${['g','kg','ml','L','unidade','colher','pacote'].map(u=>`<option value="${u}" ${u===ing.unit?'selected':''}>${u}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Preço por ${ing.unit||'g'} (R$)</div>
+          <input type="number" placeholder="0,00" value="${ing.pricePerUnit || ''}" min="0" step="any"
+            oninput="updateIngField('${type}',${i},'pricePerUnit',this.value)">
+        </div>
+      </div>
+      <div class="ing-cost" id="ing-cost-${type}-${i}">${calcIngCost(ing) > 0 ? 'Custo: R$ '+fmt(calcIngCost(ing)) : ''}</div>
+    </div>
+  `).join('');
+}
+
+window.onIngNameInput = (el, type, i) => {
+  updateIngField(type, i, 'name', el.value);
+  const val = el.value.toLowerCase();
+  const stock = LS.get('stock', []);
+  const matches = stock.filter(s => s.name.toLowerCase().includes(val));
+  const acEl = document.getElementById(`ac-${type}-${i}`);
+  if (matches.length && val.length > 1) {
+    acEl.innerHTML = matches.map(s => `<div class="autocomplete-item" onmousedown="selectStockItem('${type}',${i},'${s.id}')">${s.name} — R$${fmt(s.price)}/${s.unit}</div>`).join('');
+    acEl.style.display = 'block';
+  } else {
+    acEl.style.display = 'none';
+  }
+};
+
+window.showAutocomplete = (el, type, i) => {
+  const val = el.value.toLowerCase();
+  if (val.length > 0) onIngNameInput(el, type, i);
+};
+
+window.hideAutocomplete = (id) => {
+  setTimeout(() => { const el = document.getElementById(id); if (el) el.style.display = 'none'; }, 200);
+};
+
+window.selectStockItem = (type, i, stockId) => {
+  const stock = LS.get('stock', []);
+  const item = stock.find(s => s.id === stockId);
+  if (!item) return;
+  const arr = type === 'base' ? currentCalc.baseIngredients : currentCalc.addonIngredients;
+  arr[i].name = item.name;
+  arr[i].pricePerUnit = item.price;
+  arr[i].unit = item.unit;
+  arr[i].stockId = stockId;
+  renderIngredients(type);
+};
+
+window.updateIngField = (type, i, field, val) => {
+  const arr = type === 'base' ? currentCalc.baseIngredients : currentCalc.addonIngredients;
+  arr[i][field] = val;
+  const costEl = document.getElementById(`ing-cost-${type}-${i}`);
+  if (costEl) {
+    const c = calcIngCost(arr[i]);
+    costEl.textContent = c > 0 ? `Custo: R$ ${fmt(c)}` : '';
+  }
+};
+
+window.removeIngredient = (type, i) => {
+  const arr = type === 'base' ? currentCalc.baseIngredients : currentCalc.addonIngredients;
+  arr.splice(i, 1);
+  renderIngredients(type);
+};
+
+function calcIngCost(ing) {
+  const qty = parseFloat(ing.qty) || 0;
+  const price = parseFloat(ing.pricePerUnit) || 0;
+  return qty * price;
+}
+
+function totalIngCost(arr) {
+  return arr.reduce((s, i) => s + calcIngCost(i), 0);
+}
+
+// ===================== CALC STEP 3 =====================
+window.goStep3 = () => {
+  renderIngredients('addon');
+  goScreen('screen-calc3');
+};
+
+// ===================== CALC STEP 4 =====================
+window.goStep4 = () => {
+  goScreen('screen-calc4');
+};
+
+// ===================== CALC STEP 5 =====================
+window.goStep5 = () => {
+  currentCalc.operational = {
+    energia: parseFloat(document.getElementById('c4-energia').value) || 0,
+    embalagem: parseFloat(document.getElementById('c4-embalagem').value) || 0,
+    gas: parseFloat(document.getElementById('c4-gas').value) || 0,
+    maoObra: parseFloat(document.getElementById('c4-mao-obra').value) || 0,
+    outros: parseFloat(document.getElementById('c4-outros').value) || 0,
+  };
+  updateCostPreview();
+  goScreen('screen-calc5');
+};
+
+function updateCostPreview() {
+  const cost = getTotalCost();
+  document.getElementById('cost-preview-val').textContent = `R$ ${fmt(cost)}`;
+}
+
+function getTotalCost() {
+  const yld = currentCalc.step1.yield || 1;
+  const baseCost = (totalIngCost(currentCalc.baseIngredients) + totalIngCost(currentCalc.addonIngredients)) / yld;
+  const op = currentCalc.operational || {};
+  return baseCost + (op.energia||0) + (op.embalagem||0) + (op.gas||0) + (op.maoObra||0) + (op.outros||0);
+}
+
+window.selectMargin = (v) => {
+  document.getElementById('c5-margin').value = v;
+  updateMarginChips();
+};
+
+window.updateMarginChips = () => {
+  const v = parseFloat(document.getElementById('c5-margin').value);
+  document.querySelectorAll('#margin-chips .chip').forEach(c => {
+    const cv = parseInt(c.textContent);
+    c.classList.toggle('selected', cv === v);
+  });
+};
+
+// ===================== RESULT =====================
+window.calcResult = () => {
+  const margin = parseFloat(document.getElementById('c5-margin').value) || 50;
+  currentCalc.margin = margin;
+  const cost = getTotalCost();
+  const price = cost / (1 - margin / 100);
+  const profit = price - cost;
+  const markup = cost > 0 ? (profit / cost * 100) : 0;
+  const op = currentCalc.operational;
+
+  lastResult = { cost, price, profit, margin, markup, name: currentCalc.step1.name, size: currentCalc.step1.size, hasMaoObra: (op.maoObra||0) > 0 };
+
+  document.getElementById('res-price').textContent = `R$ ${fmt(price)}`;
+  document.getElementById('res-product-name').textContent = `${currentCalc.step1.name} — ${currentCalc.step1.size}`;
+  document.getElementById('res-cost').textContent = `R$ ${fmt(cost)}`;
+  document.getElementById('res-profit').textContent = `R$ ${fmt(profit)}`;
+  document.getElementById('res-margin').textContent = `${margin.toFixed(0)}%`;
+  document.getElementById('res-markup').textContent = `${markup.toFixed(0)}%`;
+
+  const alerts = [];
+  if (margin < 30) alerts.push(`<div class="alert alert-danger">⚠️ Margem abaixo de 30%! Você pode estar trabalhando no prejuízo.</div>`);
+  if (!op.maoObra) alerts.push(`<div class="alert alert-warning">👩‍🍳 Você não incluiu mão de obra. Seu tempo tem valor!</div>`);
+  document.getElementById('res-alerts').innerHTML = alerts.join('');
+
+  updateProjection();
+  goScreen('screen-result');
+};
+
+window.updateProjection = () => {
+  if (!lastResult) return;
+  const cups = parseInt(document.getElementById('proj-cups').value) || 30;
+  const revenue = lastResult.price * cups;
+  document.getElementById('proj-day').textContent = `R$ ${fmt(revenue)}`;
+  document.getElementById('proj-week').textContent = `R$ ${fmt(revenue * 7)}`;
+  document.getElementById('proj-month').textContent = `R$ ${fmt(revenue * 30)}`;
+  document.getElementById('proj-profit-month').textContent = `R$ ${fmt(lastResult.profit * cups * 30)}`;
+};
+
+// ===================== SAVE / LOAD RECIPES =====================
+window.saveRecipe = () => {
+  if (!lastResult) return;
+  const recipes = LS.get('recipes', []);
+  const recipe = {
+    id: Date.now().toString(),
+    name: lastResult.name,
+    size: lastResult.size,
+    price: lastResult.price,
+    cost: lastResult.cost,
+    profit: lastResult.profit,
+    margin: lastResult.margin,
+    calc: JSON.parse(JSON.stringify(currentCalc)),
+    savedAt: new Date().toLocaleDateString('pt-BR')
+  };
+  recipes.unshift(recipe);
+  LS.set('recipes', recipes);
+  showToast('Receita salva! 🍇');
+};
+
+function renderRecipes() {
+  const recipes = LS.get('recipes', []);
+  const el = document.getElementById('recipes-list');
+  if (!recipes.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🍇</div><p>Nenhuma receita salva ainda.<br>Calcule seu primeiro açaí!</p></div>`;
+    return;
+  }
+  el.innerHTML = recipes.slice(0, 10).map(r => `
+    <div class="recipe-item" onclick="loadRecipe('${r.id}')">
+      <div class="recipe-icon">🍇</div>
+      <div class="recipe-info">
+        <div class="recipe-name">${r.name}</div>
+        <div class="recipe-detail">${r.size} · Custo R$${fmt(r.cost)} · ${r.savedAt}</div>
+      </div>
+      <div>
+        <div class="recipe-price">R$ ${fmt(r.price)}</div>
+        <button onclick="event.stopPropagation();deleteRecipe('${r.id}')" style="background:none;border:none;color:var(--text-muted);font-size:14px;cursor:pointer;display:block;margin-top:4px">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.loadRecipe = (id) => {
+  const recipes = LS.get('recipes', []);
+  const r = recipes.find(x => x.id === id);
+  if (!r) return;
+  currentCalc = r.calc;
+  lastResult = { cost: r.cost, price: r.price, profit: r.profit, margin: r.margin, name: r.name, size: r.size, hasMaoObra: true };
+  document.getElementById('res-price').textContent = `R$ ${fmt(r.price)}`;
+  document.getElementById('res-product-name').textContent = `${r.name} — ${r.size}`;
+  document.getElementById('res-cost').textContent = `R$ ${fmt(r.cost)}`;
+  document.getElementById('res-profit').textContent = `R$ ${fmt(r.profit)}`;
+  document.getElementById('res-margin').textContent = `${r.margin.toFixed(0)}%`;
+  document.getElementById('res-markup').textContent = `${(r.profit/r.cost*100).toFixed(0)}%`;
+  document.getElementById('res-alerts').innerHTML = '';
+  updateProjection();
+  goScreen('screen-result');
+};
+
+window.deleteRecipe = (id) => {
+  const recipes = LS.get('recipes', []).filter(r => r.id !== id);
+  LS.set('recipes', recipes);
+  renderRecipes();
+};
+
+window.shareResult = () => {
+  if (!lastResult) return;
+  const text = `🍇 Precifica Açaí\n\n${lastResult.name} (${lastResult.size})\n\nPreço sugerido: R$ ${fmt(lastResult.price)}\nCusto: R$ ${fmt(lastResult.cost)}\nLucro: R$ ${fmt(lastResult.profit)}\nMargem: ${lastResult.margin.toFixed(0)}%\n\nCalculado com Precifica Açaí 🍇`;
+  if (navigator.share) { navigator.share({ title: 'Precifica Açaí', text }); }
+  else { navigator.clipboard.writeText(text).then(() => showToast('Copiado!')); }
+};
+
+// ===================== CANAL DE VENDA =====================
+window.calcCanal = () => {
+  const price = parseFloat(document.getElementById('canal-price').value) || 0;
+  const cups = parseFloat(document.getElementById('canal-cups').value) || 0;
+  const cardapioFee = parseFloat(document.getElementById('canal-cardapio-fee').value) || 10;
+
+  const channels = [
+    { id: 'balcao', name: '🏪 Balcão / Direto', fee: 0, cls: 'balcao' },
+    { id: 'ifood-basic', name: '📱 iFood Básico', fee: 0.152, cls: 'ifood-basic', detail: '12% comissão + 3,2% pagamento' },
+    { id: 'cardapio', name: '📋 Cardápio Digital', fee: cardapioFee/100, cls: 'cardapio', detail: `${cardapioFee}% taxa` },
+    { id: 'ifood-entrega', name: '🛵 iFood Entrega', fee: 0.265, cls: 'ifood-entrega', detail: '23% comissão + 3,5% pagamento' },
+  ];
+
+  const results = document.getElementById('canal-results');
+  results.innerHTML = channels.map(ch => {
+    const remains = price * (1 - ch.fee);
+    const lost = price - remains;
+    const monthlyLost = lost * cups * 30;
+    const monthlyRevenue = remains * cups * 30;
+    return `
+      <div class="channel-card ${ch.cls}">
+        <div class="ch-name">${ch.name} ${ch.detail ? `<span style="font-size:11px;color:var(--text-muted);font-weight:400">— ${ch.detail}</span>` : ''}</div>
+        <div class="ch-remains">R$ ${fmt(remains)} <span style="font-size:14px;font-weight:400">/ copo</span></div>
+        <div class="ch-lost">${lost > 0 ? `Você perde R$ ${fmt(lost)} por copo em taxa` : '✅ Sem taxas — o preço cheio fica com você'}</div>
+        ${cups > 0 ? `<div class="ch-monthly">Receita mensal: <strong>R$ ${fmt(monthlyRevenue)}</strong>${lost > 0 ? ` · <span class="ch-donation">Taxa mensal: R$ ${fmt(monthlyLost)}</span>` : ''}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  // WOW box
+  if (cups > 0 && price > 0) {
+    const ifoodEntregaLost = price * 0.265 * cups * 30;
+    const balcaoVsIfood = (price - price*0.265) * cups * 30;
+    const ifoodBasicRevenue = price * (1-0.152) * cups * 30;
+    const directRevenue = price * cups * 30;
+    const halfMigration = (directRevenue - ifoodBasicRevenue) * 0.5;
+
+    const wow = document.getElementById('canal-wow');
+    wow.style.display = 'block';
+    wow.innerHTML = `
+      <div class="wow-box">
+        <div class="wow-title">💸 Quanto você está "doando" por mês no iFood Entrega</div>
+        <div class="wow-value">R$ ${fmt(ifoodEntregaLost)}</div>
+        <div class="wow-sub">vendendo ${cups} copos/dia a R$${fmt(price)} cada</div>
+      </div>
+      <div class="alert alert-success">
+        💡 Se migrar 50% das vendas pro canal direto, você lucraria mais <strong>R$ ${fmt(halfMigration)}/mês</strong>
+      </div>
+    `;
+  }
+};
+
+// ===================== ESTOQUE =====================
+window.openAddStock = (id) => {
+  document.getElementById('stock-name').value = '';
+  document.getElementById('stock-price').value = '';
+  document.getElementById('stock-unit').value = 'kg';
+  document.getElementById('stock-unit-label').textContent = 'kg';
+  document.getElementById('stock-edit-id').value = id || '';
+  document.getElementById('stock-modal-title').textContent = id ? 'Editar ingrediente' : 'Adicionar ingrediente';
+
+  if (id) {
+    const item = LS.get('stock', []).find(s => s.id === id);
+    if (item) {
+      document.getElementById('stock-name').value = item.name;
+      document.getElementById('stock-price').value = item.price;
+      document.getElementById('stock-unit').value = item.unit;
+      document.getElementById('stock-unit-label').textContent = item.unit;
+    }
+  }
+  openModal('modal-stock');
+};
+
+document.getElementById('stock-unit').addEventListener('change', function() {
+  document.getElementById('stock-unit-label').textContent = this.value;
+});
+
+window.saveStock = () => {
+  const name = document.getElementById('stock-name').value.trim();
+  const price = parseFloat(document.getElementById('stock-price').value);
+  const unit = document.getElementById('stock-unit').value;
+  const editId = document.getElementById('stock-edit-id').value;
+
+  if (!name || !price) { showToast('Preencha nome e preço!'); return; }
+
+  let stock = LS.get('stock', []);
+  if (editId) {
+    const idx = stock.findIndex(s => s.id === editId);
+    if (idx >= 0) stock[idx] = { ...stock[idx], name, price, unit };
+  } else {
+    stock.unshift({ id: Date.now().toString(), name, price, unit });
+  }
+  LS.set('stock', stock);
+  closeModal('modal-stock');
+  renderStock();
+  showToast('Ingrediente salvo! 📦');
+};
+
+function renderStock() {
+  const stock = LS.get('stock', []);
+  const el = document.getElementById('stock-list');
+  if (!stock.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">📦</div><p>Nenhum ingrediente cadastrado ainda.</p></div>`;
+    return;
+  }
+  el.innerHTML = stock.map(s => `
+    <div class="stock-item">
+      <div class="si-info">
+        <div class="si-name">${s.name}</div>
+        <div class="si-detail">por ${s.unit}</div>
+      </div>
+      <div class="si-price">R$ ${fmt(s.price)}</div>
+      <div class="si-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openAddStock('${s.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteStock('${s.id}')">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.deleteStock = (id) => {
+  if (!confirm('Remover ingrediente?')) return;
+  LS.set('stock', LS.get('stock', []).filter(s => s.id !== id));
+  renderStock();
+};
+
+// ===================== ADICIONAIS =====================
+window.openAddAdicional = (id) => {
+  document.getElementById('ad-name').value = '';
+  document.getElementById('ad-cost').value = '';
+  document.getElementById('ad-price').value = '';
+  document.getElementById('ad-edit-id').value = id || '';
+  document.getElementById('adicional-modal-title').textContent = id ? 'Editar adicional' : 'Adicionar adicional';
+
+  if (id) {
+    const item = LS.get('adicionais', []).find(a => a.id === id);
+    if (item) {
+      document.getElementById('ad-name').value = item.name;
+      document.getElementById('ad-cost').value = item.cost;
+      document.getElementById('ad-price').value = item.price;
+    }
+  }
+  openModal('modal-adicional');
+};
+
+window.saveAdicional = () => {
+  const name = document.getElementById('ad-name').value.trim();
+  const cost = parseFloat(document.getElementById('ad-cost').value);
+  const price = parseFloat(document.getElementById('ad-price').value);
+  const editId = document.getElementById('ad-edit-id').value;
+
+  if (!name || isNaN(cost) || isNaN(price)) { showToast('Preencha todos os campos!'); return; }
+
+  let adicionais = LS.get('adicionais', []);
+  if (editId) {
+    const idx = adicionais.findIndex(a => a.id === editId);
+    if (idx >= 0) adicionais[idx] = { ...adicionais[idx], name, cost, price };
+  } else {
+    adicionais.unshift({ id: Date.now().toString(), name, cost, price });
+  }
+  LS.set('adicionais', adicionais);
+  closeModal('modal-adicional');
+  renderAdicionais();
+  showToast('Adicional salvo! 🍌');
+};
+
+function renderAdicionais() {
+  const adicionais = LS.get('adicionais', []);
+  const el = document.getElementById('adicionais-list');
+  if (!adicionais.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🍌</div><p>Nenhum adicional cadastrado ainda.</p></div>`;
+    return;
+  }
+  el.innerHTML = adicionais.map(a => {
+    const profit = a.price - a.cost;
+    const margin = a.price > 0 ? (profit / a.price * 100) : 0;
+    const marginOk = margin >= 30;
+    const marginLabel = margin < 0 ? 'PREJUÍZO' : `${margin.toFixed(0)}%`;
+    const tip = margin < 30 ? `Você cobra R$${fmt(a.price)} num adicional que custa R$${fmt(a.cost)}. Margem de ${marginLabel}. Está barato!` : '';
+    return `
+      <div class="adicional-item">
+        <div class="adicional-header">
+          <div class="adicional-name">${a.name}</div>
+          <span class="adicional-margin ${marginOk ? 'margin-ok' : 'margin-low'}">${marginLabel}</span>
+        </div>
+        <div class="adicional-row"><span>Custo pra você</span><span>R$ ${fmt(a.cost)}</span></div>
+        <div class="adicional-row"><span>Você cobra</span><span>R$ ${fmt(a.price)}</span></div>
+        <div class="adicional-row"><span>Lucro por unidade</span><span style="color:${profit>=0?'var(--green-light)':'var(--danger)'}">R$ ${fmt(profit)}</span></div>
+        ${tip ? `<div class="alert alert-warning" style="margin-top:8px;font-size:12px">⚠️ ${tip}</div>` : ''}
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn btn-secondary btn-sm" onclick="openAddAdicional('${a.id}')">✏️ Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteAdicional('${a.id}')">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.deleteAdicional = (id) => {
+  if (!confirm('Remover adicional?')) return;
+  LS.set('adicionais', LS.get('adicionais', []).filter(a => a.id !== id));
+  renderAdicionais();
+};
+
+// ===================== ADMIN =====================
+window.generateToken = async () => {
+  const name = document.getElementById('admin-new-name').value.trim();
+  if (!name) { showToast('Digite o nome da aluna!'); return; }
+
+  const tokens = LS.get('local_tokens', []);
+  const num = String(tokens.length + 1).padStart(3, '0');
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const rand = Array.from({length: 3}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+  const code = `${num}-${rand}`;
+
+  try {
+    await setDoc(doc(db, 'tokens_acai', code), {
+      name, code, active: true, createdBy: currentUser, createdAt: serverTimestamp()
+    });
+    tokens.unshift({ code, name, active: true, createdAt: new Date().toLocaleDateString('pt-BR') });
+    LS.set('local_tokens', tokens);
+    document.getElementById('admin-generated-token').textContent = code;
+    document.getElementById('admin-token-result').style.display = 'block';
+    document.getElementById('admin-new-name').value = '';
+    window._lastGeneratedToken = { code, name };
+    loadAdminTokens();
+    showToast('Token gerado! 🔑');
+  } catch(e) {
+    showToast('Erro ao salvar no Firebase. Verifique a config.');
+  }
+};
+
+window.copyWhatsapp = () => {
+  const t = window._lastGeneratedToken;
+  if (!t) return;
+  const msg = `Oi ${t.name}! 🍇\n\nSeu acesso ao Precifica Açaí chegou!\n\n🔑 Seu código: *${t.code}*\n\n📱 Acesse: [LINK DO SEU APP AQUI]\n\nDigita o código na tela inicial e entra!\n\nGuarda esse código — ele é só seu 💜`;
+  navigator.clipboard.writeText(msg).then(() => showToast('Mensagem copiada! 📲'));
+};
+
+async function loadAdminTokens() {
+  const el = document.getElementById('admin-tokens-list');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  try {
+    const snap = await getDocs(collection(db, 'tokens_acai'));
+    const tokens = [];
+    snap.forEach(d => tokens.push({ id: d.id, ...d.data() }));
+    if (!tokens.length) {
+      el.innerHTML = '<div class="empty-state"><p>Nenhum token gerado ainda.</p></div>';
+      return;
+    }
+    el.innerHTML = tokens.map(t => `
+      <div class="token-item">
+        <div style="flex:1">
+          <div class="token-code">${t.code || t.id}</div>
+          <div class="token-name">${t.name || '—'}</div>
+        </div>
+        <span class="token-status ${t.active !== false ? 'status-active' : 'status-revoked'}">${t.active !== false ? 'Ativo' : 'Revogado'}</span>
+        ${t.active !== false ? `<button class="btn btn-danger btn-sm" onclick="revokeToken('${t.id}')">Revogar</button>` : ''}
+      </div>
+    `).join('');
+  } catch(e) {
+    el.innerHTML = '<div class="alert alert-danger">Erro ao carregar tokens. Verifique o Firebase.</div>';
+  }
+}
+
+window.revokeToken = async (id) => {
+  if (!confirm(`Revogar token ${id}?`)) return;
+  try {
+    await updateDoc(doc(db, 'tokens_acai', id), { active: false });
+    loadAdminTokens();
+    showToast('Token revogado!');
+  } catch(e) {
+    showToast('Erro ao revogar.');
+  }
+};
+
+// ===================== UTILS =====================
+function fmt(n) {
+  return (parseFloat(n)||0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+window.closeModal = (id) => { document.getElementById(id).classList.remove('open'); };
+window.openModal = openModal;
+
+// close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// enter key on login
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('screen-login').classList.contains('active')) doLogin();
+});
+
+// init canal
+calcCanal();
+</script>
+</body>
+</html>
